@@ -1,16 +1,22 @@
-apiVersion: networking.k8s.io/v1
+apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
-  name: allow-external-traffic
-  namespace: default
+  name: allow-external-mssql
+  namespace: default  # Change if your pod is in a different namespace
 spec:
-  podSelector: {}
-  policyTypes:
+  selector: all()  # Applies to all pods in the namespace
+  types:
     - Egress
   egress:
-    - to:
-        - ipBlock:
-            cidr: 192.168.100.0/24  # MSSQL server subnet
-      ports:
-        - protocol: TCP
-          port: 1433
+    - action: Allow
+      protocol: ICMP  # Allow ping
+      destination:
+        nets:
+          - 192.168.100.70/32
+    - action: Allow
+      protocol: TCP  # Allow MSSQL connection
+      destination:
+        nets:
+          - 192.168.100.70/32
+        ports:
+          - 1433
