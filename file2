@@ -1,15 +1,23 @@
-apiVersion: projectcalico.org/v3
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ping-to-external
-  namespace: default  # Change this to the namespace where your pod is
+  name: allow-ping-and-tcp
+  namespace: default  # Change namespace if needed
 spec:
-  selector: all()  # Apply to all pods, adjust as needed
-  types:
+  podSelector:
+    matchLabels:
+      role: db  # Adjust this to match your pod's labels
+  policyTypes:
     - Egress
   egress:
-    - action: Allow
-      protocol: ICMP
-      destination:
-        nets:
-          - 192.168.108.103/32  # The IP you want to ping
+    - to:
+        - ipBlock:
+            cidr: 192.168.108.103/32  # The external IP you want to allow traffic to
+      ports:
+        - protocol: TCP  # Allow TCP traffic
+          port: 1433     # MSSQL Port or change as needed
+    - to:
+        - ipBlock:
+            cidr: 192.168.108.103/32  # The external IP for ICMP (ping)
+      ports:
+        - protocol: ICMP  # Allow ICMP for ping
